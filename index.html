@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hadder – Simarillion v1.1</title>
+<style>
+/* ==========================
+   Farbschema und Variablen
+========================== */
+:root {
+  --bg-dark: #001f3f;       /* Dunkelblau */
+  --card-green: #004d00;    /* Dunkelgrün */
+  --gold: #ffd700;          
+  --text-white: #ffffff;
+}
+
+/* ==========================
+   Basis-Styling
+========================== */
+
+body { font-family: system-ui, -apple-system, sans-serif; margin:0; padding:10px; background:var(--bg-dark); color:var(--text-white); display:flex; flex-direction:column; min-height:100vh; box-sizing:border-box; }
+
+
+/* ==========================
+   Header
+========================== */
+
+#header { text-align:center; margin-bottom:8px; }
+#header h1 { margin:0; font-size:1.6rem; color:var(--gold); }
+#header h2 { margin:0; font-size:0.9rem; font-weight:normal; color:var(--text-white); }
+#header small { font-size:0.65rem; color:#cfcfc0; }
+
+/* ==========================
+   Kategorie-Buttons
+========================== */
+
+#categories { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:8px; }
+.category-btn { padding:6px 4px; font-size:0.8rem; font-weight:bold; background:var(--card-green); color:var(--text-white); border-radius:8px; border:1px solid rgba(255,215,0,0.3); cursor:pointer; text-align:center; min-height:40px; }
+
+
+/* ==========================
+   Kartenbereich
+========================== */
+
+#card { flex:1; background:var(--card-green); border-radius:20px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; border:2px solid var(--gold); box-shadow:0 6px 15px rgba(0,0,0,0.4); margin-bottom:8px; overflow-y:auto; position:relative; cursor: pointer; }
+.card-head { font-size:1rem; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-weight:bold; letter-spacing:1px; }
+.element-name { font-size:clamp(1.8rem,8vw,3rem); font-weight:900; margin:3px 0; color:white; }
+.element-name span { display:block; font-size:1.2rem; color:var(--gold); margin-top:2px; }
+.facts { font-size:1.1rem; line-height:1.4; margin:10px 0; font-weight:500; }
+.meaning { font-size:0.95rem; line-height:1.3; font-style:italic; background:rgba(0,0,0,0.2); padding:8px; border-radius:10px; width:95%; }
+#card-index { margin-top:5px; font-size:0.8rem; color:#cfcfc0; }
+
+/* ==========================
+   Navigation (Vor/Zurück/Hören)
+========================== */
+
+#nav { display:flex; gap:8px; margin-bottom:8px; }
+.nav-btn { flex:1; padding:12px 5px; font-size:0.95rem; font-weight:bold; border:none; border-radius:12px; background:#003366; color:white; cursor:pointer; box-shadow:0 3px 0 #002244; }
+.nav-btn:active { transform:translateY(2px); box-shadow:0 1px 0 #002244; }
+#read-btn { background:#004d00; border:1px solid var(--gold); }
+
+/* ==========================
+   Bottom Button
+========================== */
+
+.bottom-btn { padding:12px; width:100%; border:none; border-radius:12px; background:var(--gold); color:var(--bg-dark); font-size:1.1rem; font-weight:800; text-transform:uppercase; margin-bottom:4px; cursor:pointer; }
+
+
+/* ==========================
+   Footer
+========================== */
+
+#footer { text-align:center; font-size:0.65rem; color:#cfcfc0; margin-top:2px; }
+</style>
+</head>
+<body>
+
+
+<!-- ==========================
+     HEADER
+========================== -->
+
+<div id="header">
+  <h1>J.R.R. Tolkien</h1>
+  <h2>Simarillion</h2>
+  <small>Version 1.2</small>
+</div>
+
+<!-- ==========================
+     KATEGORIE-BUTTONS
+========================== -->
+
+<div id="categories">
+  <button class="category-btn" data-category="start">Start</button>
+  <button class="category-btn" data-category="zeitalter">Zeitalter</button>
+  <button class="category-btn" data-category="hauptfiguren">Hauptfiguren</button>
+  <button class="category-btn" data-category="nebenfiguren">Nebenfiguren</button>
+  <button class="category-btn" data-category="orte">Orte</button>
+  <button class="category-btn" data-category="voelker">Völker/Rassen</button>
+  <button class="category-btn" data-category="ereignisse">Ereignisse</button>
+  <button class="category-btn" data-category="artefakte">Artefakte</button>
+  <button class="category-btn" data-category="zitate">Zitate</button>
+</div>
+
+<!-- ==========================
+     KARTEN-BEREICH
+========================== -->
+
+<div id="card">
+  <div class="card-head" id="card-head">Lade Karte...</div>
+  <div class="element-name" id="element-name">---</div>
+  <div class="facts" id="facts"></div>
+  <div class="meaning" id="meaning"></div>
+  <div id="card-index"></div>
+</div>
+
+<!-- ==========================
+     NAVIGATION
+========================== -->
+
+<div id="nav">
+  <button class="nav-btn" id="prev-btn">◀ Zurück</button>
+  <button class="nav-btn" id="read-btn">🔊 Hören</button>
+  <button class="nav-btn" id="next-btn">Weiter ▶</button>
+</div>
+
+
+<!-- ==========================
+     BOTTOM BUTTON
+========================== -->
+
+<div id="bottom">
+  <button class="bottom-btn" id="explain-btn">WISSEN VERTIEFEN</button>
+</div>
+
+<!-- ==========================
+     FOOTER
+========================== -->
+
+<div id="footer">
+  (c) Hier bekommst du einen Überblick über das Simarillion
+</div>
+
+<script>
+
+/* ==========================
+   DATENSTRUKTUR: Karten
+========================== */
+
+// Karten-Daten
+const cards = {
+  start: [
+    {title:"Willkommen", content:"Das Simarillion von J.R.R. Tolkien erzählt die Entstehung von Arda, die Geschichten der Valar, Maiar, Elben und Menschen."},
+    {title:"Autor", content:"John Ronald Reuel Tolkien (1892–1973), britischer Schriftsteller und Philologe, erschuf Mittelerde."},
+    {title:"Über das Buch", content:"Das Simmerillion bildet den Hintergrund für 'Der Hobbit' und 'Der Herr der Ringe' und erklärt die großen Zeitalter der Welt."}
+  ],
+  zeitalter:[
+    {title:"Erstes Zeitalter", content:"Erzählt von der Ankunft der Elben in Beleriand, großen Schlachten gegen Morgoth und den Taten der Helden."},
+    {title:"Zweites Zeitalter", content:"Beschreibt die Herrschaft von Númenor, die Schaffung der Ringe der Macht und den Aufstieg Saurons."},
+    {title:"Drittes Zeitalter", content:"Enthält Ereignisse vor und während 'Der Herr der Ringe', inklusive der Rückkehr Saurons und der Zerstörung des Einen Rings."}
+  ],
+  hauptfiguren:[
+    {title:"Fëanor", content:"Hochbegabter Elb, Schöpfer der Silmaril, dessen Taten den Krieg um die Juwelen auslösen."},
+    {title:"Finwë", content:"König der Noldor-Elben, Vater von Fëanor, Opfer von Morgoths Angriff."},
+    {title:"Galadriel", content:"Mächtige Elbin, bekannt für Weisheit und Schönheit, Herrin von Lothlórien."}
+  ],
+  nebenfiguren:[
+    {title:"Beren", content:"Mensch, der zusammen mit Lúthien die Silmaril stiehlt und große Abenteuer erlebt."},
+    {title:"Lúthien", content:"Elbin, Tochter Thingols, bekannt für Tapferkeit und Rettung von Beren."},
+    {title:"Thingol", content:"König von Doriath, Vater von Lúthien, zentrale Figur im Konflikt um die Silmaril."}
+  ],
+  orte:[
+    {title:"Valinor", content:"Land der Valar, heilig und unsterblich, weit im Westen von Mittelerde."},
+    {title:"Beleriand", content:"Land im Ersten Zeitalter, Schauplatz vieler Schlachten zwischen Elben und Morgoth."},
+    {title:"Angband", content:"Festung von Morgoth, in der er seine Armeen sammelt und die Silmaril bewacht."}
+  ],
+  voelker:[
+    {title:"Elben", content:"Unsterbliche Wesen, stark und schön, mit Wissen über Magie und Geschichte."},
+    {title:"Menschen", content:"Sterbliche Wesen, mutig und einfallsreich, oft Schlüssel in großen Kriegen."},
+    {title:"Zwerge", content:"Geschickte Handwerker und Krieger, bekannt für Bergbau und Metallbearbeitung."}
+  ],
+  ereignisse:[
+    {title:"Die Schlacht von Lammoth", content:"Frühe Schlacht im Ersten Zeitalter zwischen Elben und Morgoths Kräften."},
+    {title:"Der Fall von Gondolin", content:"Gondolin wird von Morgoth zerstört, viele Helden sterben."},
+    {title:"Dagor Bragollach", content:"Die Flut des Feuers, katastrophales Ereignis, das Beleriand schwer trifft."}
+  ],
+  artefakte:[
+    {title:"Silmaril", content:"Drei heilige Juwelen, geschaffen von Fëanor, enthalten das Licht der Two Trees."},
+    {title:"Ringe der Macht", content:"Von Sauron geschmiedet, um die freien Völker Mittelerdes zu kontrollieren."},
+    {title:"Anglachel", content:"Mächtiges Schwert, das in vielen Schlachten des Ersten Zeitalters verwendet wurde."}
+  ],
+  zitate:[
+    {title:"Zitat 1", content:"Nicht alle, die wandern, sind verloren."},
+    {title:"Zitat 2", content:"Die Geschichten von Mittelerde sind die Wurzeln der großen Mythen."},
+    {title:"Zitat 3", content:"Das Simarillion ist das Herz der Geschichte von Arda."}
+  ]
+};
+
+let currentCategory="start";
+let currentIndex=0;
+
+/* ==========================
+   SPRACHAUSGABE-FUNKTION
+========================== */
+
+// Sprachfunktion
+function speak(text){
+  const msg=new SpeechSynthesisUtterance(text);
+  msg.lang="de-DE"; msg.rate=1.0;
+  window.speechSynthesis.cancel(); window.speechSynthesis.speak(msg);
+}
+
+/* ==========================
+   KARTEN ANZEIGEN
+========================== */
+
+// Karte anzeigen
+function showCard(){
+  const card = cards[currentCategory][currentIndex];
+  if(!card) return;
+  document.getElementById("card-head").textContent = card.title;
+  document.getElementById("element-name").textContent = card.title;
+  document.getElementById("facts").textContent = "";
+  document.getElementById("meaning").textContent = card.content;
+  document.getElementById("card-index").textContent = `${currentIndex+1} / ${cards[currentCategory].length}`;
+  speak(`${card.title}. ${card.content}`);
+}
+
+// Klick auf Karte → nächste
+
+/* ==========================
+   KARTEN ANZEIGEN
+========================== */
+
+document.getElementById("card").onclick = () => {
+  currentIndex = (currentIndex + 1) % cards[currentCategory].length;
+  showCard();
+};
+
+/* ==========================
+   KATEGORIE WECHSELN
+========================== */
+
+// Kategorie wechseln
+
+document.querySelectorAll(".category-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    currentCategory=btn.dataset.category;
+    currentIndex=0;
+    showCard();
+  };
+});
+
+/* ==========================
+   NAVIGATIONSVERSCHIEBUNG
+========================== */
+
+// Navigation
+document.getElementById("prev-btn").onclick = (e) => {
+  e.stopPropagation();
+  if(currentIndex>0) currentIndex--;
+  else currentIndex = cards[currentCategory].length-1;
+  showCard();
+};
+document.getElementById("next-btn").onclick = (e) => {
+  e.stopPropagation();
+  currentIndex = (currentIndex+1) % cards[currentCategory].length;
+  showCard();
+};
+document.getElementById("read-btn").onclick = (e) => {
+  e.stopPropagation();
+  const card = cards[currentCategory][currentIndex];
+  speak(`${card.title}. ${card.content}`);
+};
+
+// Wissen vertiefen (Startkarte)
+document.getElementById("explain-btn").onclick = () => {
+  currentCategory="start"; currentIndex=0; showCard();
+};
+
+// Startkarte direkt laden
+showCard();
+</script>
+
+</body>
+</html>
